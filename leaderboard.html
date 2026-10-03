@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>排行榜 - CSS 能量工坊</title>
+<link rel="stylesheet" href="css/style.css">
+<script>
+(function () {
+  try {
+    var raw = localStorage.getItem('css_energy_workshop_save_v2');
+    var isGuest = true;
+    var theme = 'dark';
+
+    if (raw) {
+      var data = raw;
+
+      if (raw.indexOf('CEW2:') === 0) {
+        try {
+          var SECRET = 'CSS_Energy_Workshop_v2_secret_key';
+          var hex = raw.slice(5);
+          var bytes = [];
+          for (var i = 0; i < hex.length; i += 2) {
+            bytes.push(parseInt(hex.substr(i, 2), 16));
+          }
+          var keyBytes = [];
+          for (var j = 0; j < SECRET.length; j++) {
+            keyBytes.push(SECRET.charCodeAt(j));
+          }
+          var dec = [];
+          for (var k = 0; k < bytes.length; k++) {
+            dec.push(bytes[k] ^ keyBytes[k % keyBytes.length]);
+          }
+          data = new TextDecoder().decode(new Uint8Array(dec));
+        } catch (e) {}
+      }
+
+      try {
+        var d = JSON.parse(data);
+        if (d) {
+          if (d.settings && d.settings.theme === 'light') theme = 'light';
+          if (d.playerId && d.playerId.trim()) isGuest = false;
+        }
+      } catch (e) {}
+    }
+
+    if (theme === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+    if (isGuest) {
+      document.documentElement.setAttribute('data-guest', '1');
+    }
+  } catch (e) {}
+})();
+</script>
+</head>
+<body data-page="leaderboard" class="not-registered">
+<script>
+(function () {
+  if (document.documentElement.getAttribute('data-guest') !== '1') {
+    document.body.classList.remove('not-registered');
+  }
+})();
+</script>
+
+<nav class="nav" id="mainNav"></nav>
+
+<main class="container">
+
+  <section class="panel">
+    <h2 class="section-title"><span class="icon icon-trophy"></span>我的资本</h2>
+    <div class="my-rank-card" id="myRankCard"></div>
+  </section>
+
+  <section class="panel">
+    <div class="lb-header">
+      <h2 class="section-title" style="margin:0;">
+        <span class="icon icon-achievement"></span>资本排行榜
+      </h2>
+      <div class="lb-header-actions">
+        <button class="btn" id="btnCloudTest">
+          <span class="icon icon-help icon-sm"></span>测试云端
+        </button>
+        <button class="btn btn-primary" id="btnRefresh">
+          <span class="icon icon-settings icon-sm"></span>刷新
+        </button>
+      </div>
+    </div>
+    <p class="hint" id="cloudStatus" style="margin:12px 0;">点击「刷新」从云端拉取最新排行榜</p>
+
+    <div class="cloud-loading" id="lbLoading" hidden>
+      <span class="spinner"></span>
+      <span class="cloud-loading-text" id="lbLoadingText">正在加载…</span>
+    </div>
+
+    <div class="leaderboard-list" id="leaderboardList"></div>
+    <div class="lb-toggle-wrap" id="lbToggleWrap"></div>
+  </section>
+
+  <div class="row-actions">
+    <a class="btn btn-primary" href="game.html"><span class="icon icon-game"></span>返回游戏</a>
+    <a class="btn" href="finance.html"><span class="icon icon-coin"></span>前往金融</a>
+  </div>
+
+</main>
+
+<div class="notify-wrap" id="notifyWrap"></div>
+
+<script src="js/load-supabase.js"></script>
+<script src="js/data.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/sound.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/leaderboard.js"></script>
+</body>
+</html>

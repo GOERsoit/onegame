@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>金融 - CSS 能量工坊</title>
+<link rel="stylesheet" href="css/style.css">
+<script>
+(function () {
+  try {
+    var raw = localStorage.getItem('css_energy_workshop_save_v2');
+    var isGuest = true;
+    var theme = 'dark';
+
+    if (raw) {
+      var data = raw;
+
+      if (raw.indexOf('CEW2:') === 0) {
+        try {
+          var SECRET = 'CSS_Energy_Workshop_v2_secret_key';
+          var hex = raw.slice(5);
+          var bytes = [];
+          for (var i = 0; i < hex.length; i += 2) {
+            bytes.push(parseInt(hex.substr(i, 2), 16));
+          }
+          var keyBytes = [];
+          for (var j = 0; j < SECRET.length; j++) {
+            keyBytes.push(SECRET.charCodeAt(j));
+          }
+          var dec = [];
+          for (var k = 0; k < bytes.length; k++) {
+            dec.push(bytes[k] ^ keyBytes[k % keyBytes.length]);
+          }
+          data = new TextDecoder().decode(new Uint8Array(dec));
+        } catch (e) {}
+      }
+
+      try {
+        var d = JSON.parse(data);
+        if (d) {
+          if (d.settings && d.settings.theme === 'light') theme = 'light';
+          if (d.playerId && d.playerId.trim()) isGuest = false;
+        }
+      } catch (e) {}
+    }
+
+    if (theme === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+    if (isGuest) {
+      document.documentElement.setAttribute('data-guest', '1');
+    }
+  } catch (e) {}
+})();
+</script>
+</head>
+<body data-page="finance" class="not-registered">
+<script>
+(function () {
+  if (document.documentElement.getAttribute('data-guest') !== '1') {
+    document.body.classList.remove('not-registered');
+  }
+})();
+</script>
+
+<nav class="nav" id="mainNav"></nav>
+
+<main class="container">
+
+  <section class="panel">
+    <h2 class="section-title"><span class="icon icon-trophy"></span>资本总览</h2>
+    <div class="capital-grid" id="capitalGrid"></div>
+  </section>
+
+  <section class="panel">
+    <h2 class="section-title"><span class="icon icon-coin"></span>银行</h2>
+
+    <div class="bank-row">
+      <div class="bank-card">
+        <div class="bank-card-head">
+          <span class="icon icon-coin"></span>
+          <span>存款</span>
+        </div>
+        <div class="bank-amount" id="depositAmount">0</div>
+        <div class="bank-hint">每秒利息：<strong id="depositRate">0</strong></div>
+        <div class="bank-input-row">
+          <input class="input" id="depositInput" type="number" min="0" placeholder="输入金额">
+          <button class="btn btn-primary" id="btnDeposit">存入</button>
+        </div>
+        <div class="bank-input-row">
+          <input class="input" id="withdrawInput" type="number" min="0" placeholder="输入金额">
+          <button class="btn" id="btnWithdraw">取出</button>
+        </div>
+        <div class="bank-input-row">
+          <button class="btn btn-ghost" id="btnDepositAll">全部存入</button>
+          <button class="btn btn-ghost" id="btnWithdrawAll">全部取出</button>
+        </div>
+      </div>
+
+      <div class="bank-card">
+        <div class="bank-card-head">
+          <span class="icon icon-lock"></span>
+          <span>贷款</span>
+        </div>
+        <div class="bank-amount danger-text" id="loanAmount">0</div>
+        <div class="bank-hint">当前利率：<strong id="loanRate">0</strong></div>
+        <div class="bank-hint">可贷额度：<strong id="loanMax">0</strong></div>
+        <div class="bank-input-row">
+          <input class="input" id="loanInput" type="number" min="0" placeholder="输入借款金额">
+          <button class="btn btn-danger" id="btnLoan">借款</button>
+        </div>
+        <div class="bank-input-row">
+          <input class="input" id="repayInput" type="number" min="0" placeholder="输入还款金额">
+          <button class="btn" id="btnRepay">还款</button>
+        </div>
+        <div class="bank-input-row">
+          <button class="btn btn-ghost" id="btnRepayAll">还清全部</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2 class="section-title"><span class="icon icon-gear"></span>投资市场</h2>
+    <div class="invest-grid" id="investGrid"></div>
+  </section>
+
+  <section class="panel">
+    <h2 class="section-title"><span class="icon icon-check"></span>进行中的投资</h2>
+    <div class="invest-list" id="investList"></div>
+  </section>
+
+  <div class="row-actions">
+    <a class="btn btn-primary" href="game.html"><span class="icon icon-game"></span>返回游戏</a>
+    <a class="btn" href="shop.html"><span class="icon icon-shop"></span>前往商店</a>
+  </div>
+
+</main>
+
+<div class="notify-wrap" id="notifyWrap"></div>
+
+<script src="js/load-supabase.js"></script>
+<script src="js/data.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/sound.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/finance.js"></script>
+</body>
+</html>

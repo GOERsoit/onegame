@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>设置 - CSS 能量工坊</title>
+<link rel="stylesheet" href="css/style.css">
+<script>
+(function () {
+  try {
+    var raw = localStorage.getItem('css_energy_workshop_save_v2');
+    var isGuest = true;
+    var theme = 'dark';
+
+    if (raw) {
+      var data = raw;
+
+      if (raw.indexOf('CEW2:') === 0) {
+        try {
+          var SECRET = 'CSS_Energy_Workshop_v2_secret_key';
+          var hex = raw.slice(5);
+          var bytes = [];
+          for (var i = 0; i < hex.length; i += 2) {
+            bytes.push(parseInt(hex.substr(i, 2), 16));
+          }
+          var keyBytes = [];
+          for (var j = 0; j < SECRET.length; j++) {
+            keyBytes.push(SECRET.charCodeAt(j));
+          }
+          var dec = [];
+          for (var k = 0; k < bytes.length; k++) {
+            dec.push(bytes[k] ^ keyBytes[k % keyBytes.length]);
+          }
+          data = new TextDecoder().decode(new Uint8Array(dec));
+        } catch (e) {}
+      }
+
+      try {
+        var d = JSON.parse(data);
+        if (d) {
+          if (d.settings && d.settings.theme === 'light') theme = 'light';
+          if (d.playerId && d.playerId.trim()) isGuest = false;
+        }
+      } catch (e) {}
+    }
+
+    if (theme === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+    if (isGuest) {
+      document.documentElement.setAttribute('data-guest', '1');
+    }
+  } catch (e) {}
+})();
+</script>
+</head>
+<body data-page="settings" class="not-registered">
+<script>
+(function () {
+  if (document.documentElement.getAttribute('data-guest') !== '1') {
+    document.body.classList.remove('not-registered');
+  }
+})();
+</script>
+
+<nav class="nav" id="mainNav"></nav>
+
+<main class="container">
+
+  <section class="panel">
+    <h2 class="section-title"><span class="icon icon-settings"></span>主题切换</h2>
+    <div class="btn-row">
+      <button class="btn" id="themeDark">深色主题</button>
+      <button class="btn" id="themeLight">浅色主题</button>
+    </div>
+    <p class="hint">当前主题：<strong id="curTheme">深色</strong></p>
+  </section>
+
+  <section class="panel">
+    <h2 class="section-title"><span class="icon icon-coin"></span>数字格式</h2>
+    <div class="btn-row">
+      <button class="btn" id="notShort">缩写数字（1.5K）</button>
+      <button class="btn" id="notFull">完整数字（1,500）</button>
+    </div>
+    <p class="hint">当前格式：<strong id="curNotation">缩写</strong></p>
+  </section>
+
+  <section class="panel">
+    <h2 class="section-title"><span class="icon icon-check"></span>导出存档</h2>
+    <textarea class="textarea" id="exportArea" readonly rows="6"></textarea>
+    <div class="btn-row">
+      <button class="btn" id="btnExport">刷新预览</button>
+      <button class="btn btn-primary" id="btnDownload">下载 .json 文件</button>
+      <button class="btn" id="btnCopy">复制到剪贴板</button>
+    </div>
+    <p class="hint">手机端如果下载失败，请用"复制到剪贴板"保存到备忘录。</p>
+  </section>
+
+  <section class="panel">
+    <h2 class="section-title"><span class="icon icon-plus"></span>导入存档</h2>
+    <div class="btn-row">
+      <label class="btn btn-primary" for="importFile" style="cursor:pointer;">
+        <span class="icon icon-plus"></span>选择文件导入
+      </label>
+    </div>
+    <input type="file" id="importFile"
+           accept=".json,.txt,application/json,text/plain"
+           style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;">
+
+    <p class="hint" style="margin-top:12px;">或者直接粘贴存档内容到下方：</p>
+    <textarea class="textarea" id="importArea" rows="6"
+      placeholder="在此粘贴加密存档或 JSON 内容，然后点击导入"></textarea>
+    <div class="btn-row">
+      <button class="btn" id="btnImport">从文本导入</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2 class="section-title danger-title"><span class="icon icon-lock"></span>危险区域</h2>
+    <p class="hint">重置后将清空所有能量、升级与成就数据，此操作不可撤销。</p>
+    <button class="btn btn-danger" id="btnReset">重置存档</button>
+    <div class="confirm-box" id="resetConfirm" hidden>
+      <p class="confirm-text">确定要重置所有存档吗？该操作无法撤销！</p>
+      <div class="confirm-actions">
+        <button class="btn btn-danger" id="btnResetConfirm">确认重置</button>
+        <button class="btn btn-ghost" id="btnResetCancel">取消</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2 class="section-title"><span class="icon icon-help"></span>存档信息</h2>
+    <p class="hint">版本号：<strong id="infoVersion">2</strong></p>
+    <p class="hint">存档大小：<strong id="infoSize">0 B</strong></p>
+    <p class="hint">创建时间：<strong id="infoCreated">-</strong></p>
+  </section>
+
+  <div class="row-actions">
+    <a class="btn btn-primary" href="game.html"><span class="icon icon-game"></span>返回游戏</a>
+    <a class="btn" href="help.html"><span class="icon icon-help"></span>查看帮助</a>
+  </div>
+
+</main>
+
+<div class="notify-wrap" id="notifyWrap"></div>
+
+<script src="js/load-supabase.js"></script>
+<script src="js/data.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/sound.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/settings.js"></script>
+</body>
+</html>

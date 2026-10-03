@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>首页 - CSS 能量工坊</title>
+<link rel="stylesheet" href="css/style.css">
+<script>
+(function () {
+  try {
+    var raw = localStorage.getItem('css_energy_workshop_save_v2');
+    var isGuest = true;
+    var theme = 'dark';
+
+    if (raw) {
+      var data = raw;
+
+      /* 加密存档：先解密 */
+      if (raw.indexOf('CEW2:') === 0) {
+        try {
+          var SECRET = 'CSS_Energy_Workshop_v2_secret_key';
+          var hex = raw.slice(5);
+          var bytes = [];
+          for (var i = 0; i < hex.length; i += 2) {
+            bytes.push(parseInt(hex.substr(i, 2), 16));
+          }
+          var keyBytes = [];
+          for (var j = 0; j < SECRET.length; j++) {
+            keyBytes.push(SECRET.charCodeAt(j));
+          }
+          var dec = [];
+          for (var k = 0; k < bytes.length; k++) {
+            dec.push(bytes[k] ^ keyBytes[k % keyBytes.length]);
+          }
+          data = new TextDecoder().decode(new Uint8Array(dec));
+        } catch (e) {}
+      }
+
+      try {
+        var d = JSON.parse(data);
+        if (d) {
+          if (d.settings && d.settings.theme === 'light') theme = 'light';
+          if (d.playerId && d.playerId.trim()) isGuest = false;
+        }
+      } catch (e) {}
+    }
+
+    if (theme === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+    if (isGuest) {
+      document.documentElement.setAttribute('data-guest', '1');
+    }
+  } catch (e) {}
+})();
+</script>
+</head>
+<body data-page="index" class="not-registered">
+<script>
+(function () {
+  if (document.documentElement.getAttribute('data-guest') !== '1') {
+    document.body.classList.remove('not-registered');
+  }
+})();
+</script>
+
+<nav class="nav" id="mainNav"></nav>
+
+<main class="container">
+  <section class="hero">
+    <div class="core-visual hero-core">
+      <span class="core-ring"></span>
+      <span class="core-orb"></span>
+    </div>
+
+    <h1 class="hero-title">CSS 能量工坊</h1>
+    <p class="hero-sub">不用图片，不用音频，只用 CSS 和代码</p>
+
+    <div class="hero-actions">
+      <button class="btn btn-primary" id="btnNew">
+        <span class="icon icon-plus"></span>开始新游戏
+      </button>
+      <button class="btn" id="btnContinue">
+        <span class="icon icon-game"></span>继续游戏
+      </button>
+    </div>
+
+    <div class="hero-actions">
+      <button class="btn" id="btnImportExternal">
+        <span class="icon icon-plus"></span>导入外部存档
+      </button>
+    </div>
+
+    <input type="file" id="importSaveFile"
+           accept=".json,application/json"
+           style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;">
+
+    <div class="confirm-box" id="newConfirm" hidden>
+      <p class="confirm-text">这将清除已有存档，确定要重新开始吗？</p>
+      <div class="confirm-actions">
+        <button class="btn btn-danger" id="btnNewConfirm">确定清除</button>
+        <button class="btn btn-ghost" id="btnNewCancel">取消</button>
+      </div>
+    </div>
+
+    <div class="confirm-box" id="idConfirm" hidden>
+      <p class="confirm-text">给你的角色起个名字吧</p>
+      <input class="input" id="playerIdInput" maxlength="12"
+             placeholder="2~12 个字符" style="width:100%;margin-bottom:12px;">
+      <div class="confirm-actions">
+        <button class="btn btn-primary" id="btnIdConfirm">确定</button>
+        <button class="btn" id="btnIdRandom">随机生成</button>
+        <button class="btn btn-ghost" id="btnIdCancel">取消</button>
+      </div>
+      <p class="hint" id="idHint">支持字母、数字、下划线和中文，2~12 字符</p>
+
+      <div class="cloud-loading" id="cloudLoading" hidden>
+        <span class="spinner"></span>
+        <span class="cloud-loading-text" id="cloudLoadingText">正在连接云端…</span>
+      </div>
+    </div>
+
+    <div class="confirm-box" id="importDialog" hidden>
+      <p class="confirm-text">导入外部存档</p>
+      <p class="hint" style="margin-bottom:12px;">支持以下两种方式，任选其一</p>
+
+      <div class="import-row">
+        <label class="btn btn-primary import-label" for="importSaveFile2">
+          <span class="icon icon-plus"></span>选择 .json 文件
+        </label>
+        <input type="file" id="importSaveFile2"
+               accept=".json,application/json"
+               style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;">
+      </div>
+
+      <p class="hint" style="margin:12px 0 8px;">— 或者 —</p>
+
+      <textarea class="textarea" id="importTextArea" rows="5"
+                placeholder="在此粘贴存档内容，或加密字符串 CEW2:..."></textarea>
+
+      <div class="confirm-actions" style="margin-top:12px;">
+        <button class="btn btn-primary" id="btnImportTextConfirm">确认导入</button>
+        <button class="btn btn-ghost" id="btnImportCancel">取消</button>
+      </div>
+
+      <p class="hint" id="importHint" style="margin-top:10px;"></p>
+    </div>
+
+    <div class="panel save-summary" id="saveSummary"></div>
+
+    <p class="footer-note">纯前端多网页小游戏 · 数据保存在浏览器 localStorage</p>
+  </section>
+</main>
+
+<div class="notify-wrap" id="notifyWrap"></div>
+
+<script src="js/load-supabase.js"></script>
+<script src="js/data.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/sound.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/index.js"></script>
+</body>
+</html>

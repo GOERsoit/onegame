@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>帮助 - CSS 能量工坊</title>
+<link rel="stylesheet" href="css/style.css">
+<script>
+(function () {
+  try {
+    var raw = localStorage.getItem('css_energy_workshop_save_v2');
+    var isGuest = true;
+    var theme = 'dark';
+
+    if (raw) {
+      var data = raw;
+
+      if (raw.indexOf('CEW2:') === 0) {
+        try {
+          var SECRET = 'CSS_Energy_Workshop_v2_secret_key';
+          var hex = raw.slice(5);
+          var bytes = [];
+          for (var i = 0; i < hex.length; i += 2) {
+            bytes.push(parseInt(hex.substr(i, 2), 16));
+          }
+          var keyBytes = [];
+          for (var j = 0; j < SECRET.length; j++) {
+            keyBytes.push(SECRET.charCodeAt(j));
+          }
+          var dec = [];
+          for (var k = 0; k < bytes.length; k++) {
+            dec.push(bytes[k] ^ keyBytes[k % keyBytes.length]);
+          }
+          data = new TextDecoder().decode(new Uint8Array(dec));
+        } catch (e) {}
+      }
+
+      try {
+        var d = JSON.parse(data);
+        if (d) {
+          if (d.settings && d.settings.theme === 'light') theme = 'light';
+          if (d.playerId && d.playerId.trim()) isGuest = false;
+        }
+      } catch (e) {}
+    }
+
+    if (theme === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+    if (isGuest) {
+      document.documentElement.setAttribute('data-guest', '1');
+    }
+  } catch (e) {}
+})();
+</script>
+</head>
+<body data-page="help" class="not-registered">
+<script>
+(function () {
+  if (document.documentElement.getAttribute('data-guest') !== '1') {
+    document.body.classList.remove('not-registered');
+  }
+})();
+</script>
+
+<nav class="nav" id="mainNav"></nav>
+
+<main class="container">
+
+  <section class="panel">
+    <h2 class="section-title"><span class="icon icon-game"></span>玩法说明</h2>
+    <p class="help-p">点击中央的能量核心即可获得能量。每次点击获得的数量等于「点击收益」。</p>
+    <p class="help-p">能量可以用来在商店中购买升级，升级会提高点击收益或自动收益。</p>
+    <p class="help-p">自动收益会每秒自动增加你的能量，即使你什么都不做。</p>
+  </section>
+
+  <section class="panel">
+    <h2 class="section-title"><span class="icon icon-shop"></span>升级说明</h2>
+    <p class="help-p"><strong>点击强化：</strong>提高每次点击获得的能量。</p>
+    <p class="help-p"><strong>自动生产：</strong>提高每秒自动获得的能量。</p>
+    <p class="help-p">每次购买升级，该升级的价格都会按固定倍率上涨。</p>
+  </section>
+
+  <section class="panel">
+    <h2 class="section-title"><span class="icon icon-trophy"></span>成就说明</h2>
+    <p class="help-p">达成特定条件后会自动解锁成就，解锁时会弹出提示并记录解锁时间。</p>
+    <p class="help-p">成就树有前置依赖，必须先解锁父节点。</p>
+  </section>
+
+  <section class="panel">
+    <h2 class="section-title"><span class="icon icon-coin"></span>离线收益说明</h2>
+    <p class="help-p">关闭页面后，游戏仍会按你的自动收益累计离线能量。</p>
+    <p class="help-p">再次打开页面时会自动结算，默认最多累计 8 小时。</p>
+  </section>
+
+  <section class="panel">
+    <h2 class="section-title"><span class="icon icon-lock"></span>数据保存说明</h2>
+    <p class="help-p">所有数据都保存在浏览器的 localStorage 中，键名为 <code>css_energy_workshop_save_v2</code>。</p>
+    <p class="help-p">存档内容会经过一层轻量混淆加密。</p>
+    <p class="help-p">游戏每 5 秒自动保存一次，购买升级与解锁成就时也会立即保存。</p>
+  </section>
+
+  <section class="panel">
+    <h2 class="section-title"><span class="icon icon-help"></span>常见问题</h2>
+    <p class="help-p"><strong>Q：为什么自动收益没有增加？</strong><br>需要先在商店购买「自动生产」类升级。</p>
+    <p class="help-p"><strong>Q：为什么离线收益很少？</strong><br>离线收益按自动收益计算，且默认最多只累计 8 小时。</p>
+    <p class="help-p"><strong>Q：换浏览器后进度还在吗？</strong><br>不在。存档只保存在当前浏览器，可以通过导出/导入转移。</p>
+    <p class="help-p"><strong>Q：可以重置游戏吗？</strong><br>可以，在设置页点击「重置存档」，需要二次确认。</p>
+  </section>
+
+  <div class="row-actions">
+    <a class="btn btn-primary" href="game.html"><span class="icon icon-game"></span>返回游戏</a>
+    <a class="btn" href="settings.html"><span class="icon icon-settings"></span>前往设置</a>
+  </div>
+
+</main>
+
+<div class="notify-wrap" id="notifyWrap"></div>
+
+<script src="js/load-supabase.js"></script>
+<script src="js/data.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/sound.js"></script>
+<script src="js/supabase-config.js"></script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>游戏 - CSS 能量工坊</title>
+<link rel="stylesheet" href="css/style.css">
+<script>
+(function () {
+  try {
+    var raw = localStorage.getItem('css_energy_workshop_save_v2');
+    var isGuest = true;
+    var theme = 'dark';
+
+    if (raw) {
+      var data = raw;
+
+      if (raw.indexOf('CEW2:') === 0) {
+        try {
+          var SECRET = 'CSS_Energy_Workshop_v2_secret_key';
+          var hex = raw.slice(5);
+          var bytes = [];
+          for (var i = 0; i < hex.length; i += 2) {
+            bytes.push(parseInt(hex.substr(i, 2), 16));
+          }
+          var keyBytes = [];
+          for (var j = 0; j < SECRET.length; j++) {
+            keyBytes.push(SECRET.charCodeAt(j));
+          }
+          var dec = [];
+          for (var k = 0; k < bytes.length; k++) {
+            dec.push(bytes[k] ^ keyBytes[k % keyBytes.length]);
+          }
+          data = new TextDecoder().decode(new Uint8Array(dec));
+        } catch (e) {}
+      }
+
+      try {
+        var d = JSON.parse(data);
+        if (d) {
+          if (d.settings && d.settings.theme === 'light') theme = 'light';
+          if (d.playerId && d.playerId.trim()) isGuest = false;
+        }
+      } catch (e) {}
+    }
+
+    if (theme === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+    if (isGuest) {
+      document.documentElement.setAttribute('data-guest', '1');
+    }
+  } catch (e) {}
+})();
+</script>
+</head>
+<body data-page="game" class="not-registered">
+<script>
+(function () {
+  if (document.documentElement.getAttribute('data-guest') !== '1') {
+    document.body.classList.remove('not-registered');
+  }
+})();
+</script>
+
+<nav class="nav" id="mainNav"></nav>
+
+<main class="container">
+
+  <section class="panel status-bar">
+    <div class="stat">
+      <span class="stat-label">当前能量</span>
+      <span class="stat-value accent" id="statEnergy">0</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">每秒自动收益</span>
+      <span class="stat-value" id="statAuto">0</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">点击收益</span>
+      <span class="stat-value" id="statClick">1</span>
+    </div>
+  </section>
+
+  <section class="core-stage">
+    <button class="core-button" id="coreButton" aria-label="点击能量核心">
+      <span class="core-visual">
+        <span class="core-ring"></span>
+        <span class="core-orb"></span>
+      </span>
+    </button>
+    <div class="float-layer" id="floatLayer"></div>
+  </section>
+
+  <section class="panel progress-panel" id="progressPanel"></section>
+  <section class="panel recent-panel" id="recentPanel"></section>
+
+  <div class="row-actions">
+    <a class="btn btn-primary" href="shop.html"><span class="icon icon-shop"></span>前往商店</a>
+    <a class="btn" href="finance.html"><span class="icon icon-coin"></span>前往金融</a>
+    <a class="btn" href="leaderboard.html"><span class="icon icon-trophy"></span>排行榜</a>
+    <a class="btn" href="achievements.html"><span class="icon icon-achievement"></span>前往成就</a>
+  </div>
+
+</main>
+
+<div class="notify-wrap" id="notifyWrap"></div>
+
+<script src="js/load-supabase.js"></script>
+<script src="js/data.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/sound.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
