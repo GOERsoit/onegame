@@ -35,15 +35,8 @@
   function renderCapital() {
     const deposit = save.bank.deposit;
     const energy = save.energy;
-    const power = (function () {
-      let sum = 0;
-      for (let i = 0; i < UPGRADE_ORDER.length; i++) {
-        sum += (save.upgrades[UPGRADE_ORDER[i]] || 0) *
-               (UPGRADES[UPGRADE_ORDER[i]].capitalPerLevel || 0);
-      }
-      return sum;
-    })();
-    const influence = countUnlocked(save) * 500;
+    const power = getTotalLevels(save.upgrades) * 10;
+    const influence = countUnlocked(save) * 50;
     const loan = save.bank.loan;
     const capital = calcCapital(save);
 
@@ -56,8 +49,8 @@
         '<div class="summary-value">' + formatNumber(power) + '</div></div>' +
       '<div class="capital-item"><div class="summary-label">影响力</div>' +
         '<div class="summary-value">' + formatNumber(influence) + '</div></div>' +
-      '<div class="capital-item danger-text"><div class="summary-label">欠款×10</div>' +
-        '<div class="summary-value">-' + formatNumber(loan * 10) + '</div></div>' +
+      '<div class="capital-item danger-text"><div class="summary-label">欠款×2</div>' +
+        '<div class="summary-value">-' + formatNumber(loan * 2) + '</div></div>' +
       '<div class="capital-item accent"><div class="summary-label">资本</div>' +
         '<div class="summary-value">' + formatNumber(capital) + '</div></div>';
   }
@@ -71,7 +64,7 @@
 
     loanAmount.textContent = formatNumber(save.bank.loan);
     const lrate = save.bank.loan > 0
-      ? calcLoanRate(save.bank.loan, calcCapital(save) + save.bank.loan * 10)
+      ? calcLoanRate(save.bank.loan, calcCapital(save) + save.bank.loan * 2)
       : calcLoanRate(0, calcCapital(save));
     loanRate.textContent = (lrate * 100).toFixed(4) + '% / 秒';
     loanMax.textContent = formatNumber(calcMaxLoan(save));
@@ -180,8 +173,17 @@
     notify('已还款 ' + formatNumber(actual), 'success');
   });
 
-  /* ---------- 投资渲染 ---------- */
+  /* =========================================================
+     投资渲染
+     关键：如果用户正在输入，跳过重建，避免键盘被收回
+     ========================================================= */
   function renderInvest() {
+    /* 检测是否有投资输入框正在聚焦 */
+    const active = document.activeElement;
+    if (active && active.classList && active.classList.contains('invest-input')) {
+      return;
+    }
+
     const capital = calcCapital(save);
     let html = '';
 
@@ -220,11 +222,20 @@
 
     investGrid.innerHTML = html;
 
+    /* 绑定投资按钮 */
     const buttons = investGrid.querySelectorAll('.invest-btn');
     for (let i = 0; i < buttons.length; i++) {
       buttons[i].addEventListener('click', function () {
         const id = this.getAttribute('data-inv');
         doInvest(id);
+      });
+    }
+
+    /* 绑定输入框失焦：失焦后立即刷新，恢复按钮状态 */
+    const inputs = investGrid.querySelectorAll('.invest-input');
+    for (let i = 0; i < inputs.length; i++) {
+      inputs[i].addEventListener('blur', function () {
+        setTimeout(renderInvest, 150);
       });
     }
   }
@@ -384,7 +395,7 @@
     }
     /* 贷款利息 */
     if (save.bank.loan > 0) {
-      const cap = calcCapital(save) + save.bank.loan * 10;
+      const cap = calcCapital(save) + save.bank.loan * 2;
       const lrate = calcLoanRate(save.bank.loan, cap);
       save.bank.loan += save.bank.loan * lrate;
     }
